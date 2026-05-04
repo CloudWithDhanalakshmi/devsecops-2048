@@ -9,12 +9,6 @@ pipeline {
 
     stages {
 
-        stage('Clone Code') {
-            steps {
-                git 'https://github.com/CloudwithDhanalakshmi/devsecops-2048.git'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t 2048-game .'
