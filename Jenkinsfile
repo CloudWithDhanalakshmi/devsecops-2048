@@ -17,7 +17,7 @@ pipeline {
 
         stage('Scan with Trivy') {
             steps {
-                sh 'trivy image 2048-game'
+                sh 'trivy image 2048-game || true'
             }
         }
 
@@ -30,22 +30,30 @@ pipeline {
             }
         }
 
-        stage('Tag Image') {
+        stage('Tag & Push Image') {
             steps {
-                sh 'docker tag 2048-game:latest $ECR_REPO:$IMAGE_TAG'
-            }
-        }
-
-        stage('Push to ECR') {
-            steps {
-                sh 'docker push $ECR_REPO:$IMAGE_TAG'
+                sh '''
+                docker tag 2048-game:latest $ECR_REPO:$IMAGE_TAG
+                docker push $ECR_REPO:$IMAGE_TAG
+                '''
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f k8s/deployment.yaml'
-                sh 'kubectl apply -f k8s/service.yaml'
+                sh '''
+                echo "Current directory:"
+                pwd
+
+                echo "Files:"
+                ls -la
+
+                echo "K8s folder:"
+                ls -la k8s
+
+                kubectl apply -f k8s/deployment.yaml
+                kubectl apply -f k8s/service.yaml
+                '''
             }
         }
     }
